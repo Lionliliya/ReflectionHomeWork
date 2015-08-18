@@ -1,0 +1,79 @@
+// 1. Создать аннотацию, которая принимает параметры для метода. Написать код, который вызовет метод,
+помеченный этой аннотацией, и передаст параметры аннотации в вызываемый метод.
+
+// Annotation
+
+package oop1home1;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Inherited
+@Target(value=ElementType.METHOD)
+@Retention(value= RetentionPolicy.RUNTIME)
+
+
+	public @interface MultAnnotation {
+	int param1();
+	int param2();
+	
+}
+
+//My Class
+
+package oop1home1;
+
+public class MethodClass {
+	int x,y;
+	
+	
+	public MethodClass() {
+		super();
+	}
+
+	public MethodClass(int x, int y) {
+		super();
+		this.x = x;
+		this.y = y;
+	}
+
+	@MultAnnotation(param1=3, param2=2)
+	public void mult(int a, int b) {
+		System.out.println(a*b);
+	}
+	
+}
+
+// Main
+
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+public class Main {
+
+	public static void main(String[] args) {
+		MethodClass mymethod = new MethodClass();
+		Class<?> cls = mymethod.getClass();
+
+		Method[] methods = cls.getMethods();
+
+		for (Method method : methods) {
+			if (method.isAnnotationPresent(MultAnnotation.class)) {
+				MultAnnotation my = method.getAnnotation(MultAnnotation.class);
+				try {
+					method.invoke(mymethod, my.param1(),my.param2());
+					
+				} catch (IllegalAccessException | IllegalArgumentException
+						| InvocationTargetException e) {
+					e.printStackTrace();
+				}
+
+			}
+		}
+
+	}
+
+}
