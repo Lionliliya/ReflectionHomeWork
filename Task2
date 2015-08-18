@@ -1,0 +1,98 @@
+// 2. Написать класс TextContainer, который содержит в себе строку. С помощью механизма аннотаций указать
+//1) в какой файл должен сохраниться текст 2) метод, который выполнит сохранение. Написать класс Saver,
+//который сохранит поле класса TextContainer в указанный файл.
+
+//Annotation with path to save
+
+package home2;
+import java.lang.annotation.*;
+
+
+@Target(value = ElementType.FIELD)
+@Retention(value = RetentionPolicy.RUNTIME)
+public @interface SaveTo {
+	String path();
+}
+
+// Annotation for saving method 
+package home2;
+
+import java.lang.annotation.*;
+
+@Target(value = ElementType.METHOD)
+@Retention(value = RetentionPolicy.RUNTIME)
+
+public @interface Saver{}
+
+// TextContainer
+
+package home2;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+public class TextContainer {
+	@SaveTo(path = "/home/lionliliya/workspace_pro/oop1home1/save.txt")
+	static String text = "Java SE";
+	
+
+	@Saver
+	public static void savingInFile(String savePath) {
+		try (PrintWriter pw = new PrintWriter(savePath)) {
+			pw.print(text);
+			pw.close();
+
+		} catch (IOException ex) {
+			System.out.println("Cant save!Error!");
+		}
+	}
+}
+
+// Class that save text into file
+
+package home2;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+
+public class SaverText {
+		public static void saving(Class<?> cls) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+			Field[] fields = cls.getDeclaredFields();
+			Method [] methods = cls.getDeclaredMethods();
+			for (Field f : fields) {
+				if (f.isAnnotationPresent(SaveTo.class)) {
+					SaveTo save = f.getAnnotation(SaveTo.class);
+					for(Method m : methods) {
+						if (m.isAnnotationPresent(Saver.class)) {
+							m.invoke(null, save.path());
+							System.out.println("Saving done!");
+						}
+					}
+					
+				}
+			}
+			
+		}
+	}
+	
+	// Main Class
+package home2;
+
+import java.lang.reflect.InvocationTargetException;
+
+public class Main {
+
+	public static void main(String[] args) {
+
+		try {
+			SaverText.saving(TextContainer.class);
+		} catch (IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException e) {
+
+			System.out.println("Saver does not work!");
+		}
+
+	}
+}
